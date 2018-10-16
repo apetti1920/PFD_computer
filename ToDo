@@ -1,0 +1,5 @@
+-Client needs to try reconnected whenever disconnected
+-Server needs to allow reconnection
+-Webpage needs to display depth/imu data
+-Webpage needs to show connection status
+-webpage needs to be able to arm/disarm (with arguments)
