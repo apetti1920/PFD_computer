@@ -1,33 +1,34 @@
 import socket
 from threading import Thread
-import time
+import json
 
 
 class Server():
-    def __init__(self):
-        self.start_server()
+    def __init__(self, sockio):
+        self.sockio=sockio
+        self.conn, self.addr = self.start_server()
+        self.t1 = Thread(target=self.server_listen)
+        self.t1.start()
 
     def start_server(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(('localhost', 50000))
         s.listen(1)
         conn, addr = s.accept()
-        t1 = Thread(target=self.server_send, args=(conn,), daemon=True)
-        t1.start()
+        return conn, addr
 
+    def server_listen(self):
         while 1:
-            data = conn.recv(1024)
+            data = self.conn.recv(1024)
             if not data:
+                print('not data')
                 break
 
+            self.sockio.emit('my event', json.loads(data.decode('utf8')))
             print(data)
 
-        conn.close()
+        self.conn.close()
 
-    def server_send(self, conn):
-        time.sleep(5)
-        conn.sendall('stop')
-
-
-if __name__ == '__main__':
-    Server()
+    def server_send(self, message):
+        t1 = Thread(target=self.conn.sendall, args=(message,))
+        t1.start()
