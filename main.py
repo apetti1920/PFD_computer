@@ -18,6 +18,9 @@ def index():
 def handle_my_custom_event(json):
     print('received json: ' + str(json))
 
+@socketio.on('button click')
+def handle_my_custom_event(json):
+    print('received button click: ' + str(json))
 
 if __name__ == '__main__':
     socketio.run(app)

@@ -5,9 +5,9 @@
         <title>Title</title>
 
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+        <script type="text/javascript" src="/static/processing.min.js"></script>
     </head>
     <body>
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
         <script type="text/javascript" charset="utf-8">
             const socket = io.connect('http://' + "127.0.0.1" + ':' + 5000);
             socket.on('connect', function() {
@@ -16,10 +16,149 @@
             socket.on('message', function(data) {
                 console.log(data)
             });
-            socket.on('my event', function(data) {
-                console.log(data)
-            });
+
+
+            function buttonclick() {
+                socket.emit('button click', {data: 'Button Clicked'});
+            }
         </script>
+
+        <canvas id="canvas1" width="200" height="200"></canvas>
+        <script id="script1" type="text/javascript">
+
+        // Attaching js code to the canvas by using a sketch object
+
+        var sketch = new Processing.Sketch();
+        var globaldata = {'data': {'depth': 0, 'IMUx': 0, 'IMUy': 0, 'IMUz': 0}};
+        // define 3D context
+        sketch.use3DContext = true;
+        // preload the image
+        // attach function (also, can be specified as the single parameter
+        // in the Processing.Sketch object constructor)
+        sketch.attachFunction = function(processing) {
+
+            socket.on('my event', function(data) {
+                globaldata = data;
+                processing.redraw();
+            });
+
+            processing.setup = function() {
+              processing.size(640, 360, processing.P3D);
+
+              processing.background(255);
+              processing.lights();
+              processing.translate(processing.width / 2, processing.height / 2, -100);
+
+              rotatePyrimid();
+
+              processing.noLoop();
+            };
+
+            processing.draw = function() {
+
+                processing.background(255);
+                processing.lights();
+                processing.translate(processing.width / 2, processing.height / 2, -100);
+
+                rotatePyrimid();
+            };
+
+            function drawPyrimid() {
+              processing.beginShape();
+              processing.vertex(-100, -100, -100);
+              processing.vertex( 100, -100, -100);
+              processing.vertex(   0,    0,  100);
+              processing.fill(0, 0, 0);
+              processing.endShape();
+
+              processing.beginShape();
+              processing.vertex( 100, -100, -100);
+              processing.vertex( 100,  100, -100);
+              processing.vertex(   0,    0,  100);
+              processing.fill(0, 255, 0);
+              processing.endShape();
+
+              processing.beginShape();
+              processing.vertex( 100, 100, -100);
+              processing.vertex(-100, 100, -100);
+              processing.vertex(   0,   0,  100);
+              processing.fill(0, 0, 255);
+              processing.endShape();
+
+              processing.beginShape();
+              processing.vertex(-100,  100, -100);
+              processing.vertex(-100, -100, -100);
+              processing.vertex(   0,    0,  100);
+              processing.fill(255, 0, 0);
+              processing.endShape();
+
+              processing.beginShape();
+              processing.vertex(-100,  100, -100);
+              processing.vertex(-100, -100, -100);
+              processing.vertex( 100,  100, -100);
+              processing.vertex( 100, -100, -100);
+              processing.fill(255, 255, 102);
+              processing.endShape();
+
+            }
+
+            function rotatePyrimid() {
+
+                    console.log(globaldata['data']);
+                    processing.rotateX(globaldata['data']['IMUx']);
+                    processing.rotateY(globaldata['data']['IMUy']);
+                    processing.rotateZ(globaldata['data']['IMUz']);
+                    processing.stroke(255);
+
+
+                    drawPyrimid();
+            }
+        };
+
+        var canvas = document.getElementById("canvas1");
+        // attaching the sketch to the canvas
+        var p = new Processing(canvas, sketch);
+
+        </script>
+
+        <canvas id="canvas2" width="200" height="200"></canvas>
+        <script id="script2" type="text/javascript">
+
+        // Attaching js code to the canvas by using a sketch object
+
+        var sketch2 = new Processing.Sketch();
+        sketch2.use3DContext = false;
+        // attach function (also, can be specified as the single parameter
+        // in the Processing.Sketch object constructor)
+        sketch2.attachFunction = function(processing) {
+
+            socket.on('my event', function(data) {
+                processing.redraw()
+            });
+
+            processing.setup = function() {
+              processing.size(200, 360, processing.P3D);
+
+              processing.background(255);
+              processing.noLoop();
+            };
+
+            processing.draw = function() {
+                processing.background(255);
+                var depth = globaldata['data']['depth'];
+                processing.rect(processing.width/2-50, processing.height-depth, 100, depth);
+                var x = processing.map(globaldata['data']['depth'], 0, processing.height, 0, 255);
+                processing.fill(x, 255-x, 0);
+            };
+        };
+
+        var canvas = document.getElementById("canvas2");
+        // attaching the sketch to the canvas
+        var p = new Processing(canvas, sketch2);
+
+        </script>
+
         <div id="serverData">Here is where the server sent data will appear</div>
+        <button onclick="buttonclick()">Click me</button>
     </body>
 </html>
