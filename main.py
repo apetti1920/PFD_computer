@@ -1,20 +1,12 @@
 from flask import Flask, render_template
-from flask_socketio import SocketIO, send, emit
-from socket_server import Server
-from threading import Thread, Event
-import json
+from flask_socketio import SocketIO
+from PFDSocket import PFDSocket
+from threading import Thread, Event, Timer
+import webbrowser
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
-
-arm = Event()
-disarm = Event()
-
-# noinspection PyTypeChecker
-Thread(target=Server, args=(socketio, [arm, disarm])).start()
-print('Thread Connection')
-
 
 @app.route("/")
 def index():
@@ -34,6 +26,17 @@ def handle_my_custom_event(json2):
     elif json2['data'] == 'Disarm':
         disarm.set()
 
+def on_data(data):
+    socketio.emit(data)
+
 
 if __name__ == '__main__':
-    socketio.run(app)
+    arm = Event()
+    disarm = Event()
+
+    # noinspection PyTypeChecker
+    sock = PFDSocket()
+    sock.on('data', on_data)
+    Thread(target=sock.server(), name="Server Thread").start()
+    Thread(target=socketio.run, args=(app,), name="SocketIO Thread").start()
+    Thread(target=webbrowser.open, args=('http://127.0.0.1:5000/',), name="Browser Thread").start()

@@ -1,21 +1,4 @@
 -Client needs to try reconnected whenever disconnected
 -Webpage needs to show connection status
--webpage needs to be able to arm/disarm (with arguments)
-
-
--References are wrong or not there**
--Background
-    -what are problem currently
-        -why are people not wearing pfd
-            -how do we tackle that
-    -Tie in Recue
-        -How o they look for someone
-            -THey use radar
-                -Heightened radar signal
-
-    -Beef up pros and cons of previous year
-
-    -Start by looking at report
-    -Leave ink in reprt
-
--stakeholder analysis
+-send arguments with arm
+-send file with disarm
